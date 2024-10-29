@@ -1,13 +1,26 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+
+import { CategoriesModule } from './categories/categories.module';
 import { SubcategoriesModule } from './subcategories/subcategories.module';
-import { CategoriesModule } from './categories/categories.module'; // Assuming you have a Categories module
+import { CoursesModule } from './courses/courses.module';
 
 @Module({
-    imports: [
-        MongooseModule.forRoot('mongodb+srv://palash:palash@dummy.wmyx8nx.mongodb.net/course-management?retryWrites=true&w=majority'), // Update with your MongoDB connection string
-        CategoriesModule,
-        SubcategoriesModule,
-    ],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true, // Makes ConfigModule available globally
+    }),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        uri: configService.get<string>('MONGO_URI'),
+      }),
+      inject: [ConfigService],
+    }),
+    CategoriesModule,
+    SubcategoriesModule,
+    CoursesModule,
+  ],
 })
 export class AppModule {}
